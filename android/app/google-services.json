@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "107010768252",
+    "project_id": "sistem-academic",
+    "storage_bucket": "sistem-academic.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:107010768252:android:2d3dd9a2f387b6d7f538f9",
+        "android_client_info": {
+          "package_name": "com.example.academic"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAFNAxRwisuzE_lQhvKzXONBhxFLEVmCRM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:107010768252:android:188c7cdd73e12a4df538f9",
+        "android_client_info": {
+          "package_name": "com.example.academic_mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAFNAxRwisuzE_lQhvKzXONBhxFLEVmCRM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
