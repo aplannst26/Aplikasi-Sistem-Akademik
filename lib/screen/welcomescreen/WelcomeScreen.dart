@@ -1,4 +1,5 @@
 import 'package:academic_mobile/screen/welcomescreen/LoginScreen.dart';
+import 'package:academic_mobile/screen/welcomescreen/MainPage.dart';
 import 'package:academic_mobile/theme/color.dart';
 import 'package:flutter/material.dart';
 
@@ -26,8 +27,8 @@ class WelcomeScreen extends StatelessWidget {
             SizedBox(height: 30),
             const Image(
               image: AssetImage('assets/welcome.png'),
-              width: 250,
-              height: 250, 
+              width: 500,
+              height: 500, 
               ),
               const Spacer(),
               SizedBox(
@@ -36,7 +37,7 @@ class WelcomeScreen extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.push(context, 
-                    MaterialPageRoute(builder: (context) => LoginScreen()),
+                    MaterialPageRoute(builder: (context) => Mainpage()),
                     );
                   },
                   style: ElevatedButton.styleFrom(

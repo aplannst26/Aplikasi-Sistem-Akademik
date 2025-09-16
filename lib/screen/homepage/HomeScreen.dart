@@ -8,9 +8,11 @@ import './informasi.dart';
 import './Activitas.dart';
 import './DetailKHS.dart';
 import './KTM.dart';
+import 'dart:async' show Timer;
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final String? googleName;
+  const HomeScreen({super.key, this.googleName});
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -20,7 +22,13 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
   // List of pages to navigate between
-  final List<Widget> _pages = [HomePage(), KTMPage(), ProfilePage()];
+  late final List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+    _pages = [HomePage(), KTMPage(), ProfilePage(googleName: widget.googleName)];
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -114,11 +122,16 @@ class HomePage extends StatelessWidget {
                 // University image
                 ClipRRect(
                   borderRadius: BorderRadius.circular(20),
-                  child: Image.asset(
-                    'assets/univ.png',
+                  child: Container(
                     height: 150,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
+                    child: AutoScrollingBanner(
+                      images: [
+                        'assets/univ.png',
+                        'assets/group16.png',
+                        'assets/group17.png',
+                        'assets/group18.png',
+                      ],
+                    ),
                   ),
                 ),
                 SizedBox(height: 10),
@@ -241,19 +254,36 @@ class HomePage extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'Jadwal Kuliah Hari Ini',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppColor.primary,
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => Activitas()),
+                        );
+                      },
+                      child: Text(
+                        'Jadwal Kuliah Hari Ini',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppColor.primary,
+                        ),
                       ),
                     ),
-                    Icon(
-                      Icons.arrow_circle_right_rounded,
-                      color: AppColor.grey,
-                      size: 40,
-                      semanticLabel: 'Lihat jadwal',
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => JadwalKuliahPage()),
+                        );
+                      },
+                      child: Icon(
+                        Icons.arrow_circle_right_rounded,
+                        color: AppColor.grey,
+                        size: 40,
+                        semanticLabel: 'Lihat jadwal',
+                      ),
                     ),
                   ],
                 ),
@@ -281,7 +311,7 @@ class HomePage extends StatelessWidget {
                       Icon(Icons.arrow_downward, color: AppColor.primary),
                       SizedBox(width: 10),
                       Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,  
                         children: [
                           Text(
                             '09:40 - 12:10',
@@ -323,7 +353,8 @@ class HomePage extends StatelessWidget {
                     ),
                   ],
                 ),
-                SizedBox(height: 16.0),
+                SizedBox(height: 0),
+
                 Container(
                   height: 500,
                   child: ListView(
@@ -366,12 +397,19 @@ class HomePage extends StatelessWidget {
                             SizedBox(height: 16),
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color.fromARGB(255, 26, 126, 48),
+                                backgroundColor:
+                                    const Color.fromARGB(255, 45, 51, 87),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
-                              onPressed: () {},
+                              onPressed: () {
+                                Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                builder: (context) => const Informasi()),
+                                );
+                              },
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
@@ -383,7 +421,7 @@ class HomePage extends StatelessWidget {
                             ),
                           ],
                         ),
-                      ),                      
+                      ),
                       ClipRRect(
                         borderRadius: BorderRadius.circular(16.0),
                         child: Image.asset(
@@ -420,12 +458,19 @@ class HomePage extends StatelessWidget {
                             SizedBox(height: 16),
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color.fromARGB(255, 26, 126, 31),
+                                backgroundColor:
+                                    const Color.fromARGB(255, 45, 51, 87),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
-                              onPressed: () {},
+                              onPressed: () {
+                                Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                builder: (context) => const Informasi()),
+                                );
+                              },
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
@@ -474,12 +519,19 @@ class HomePage extends StatelessWidget {
                             SizedBox(height: 16),
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color.fromARGB(255, 26, 126, 28),
+                                backgroundColor:
+                                    const Color.fromARGB(255, 45, 51, 87),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
-                              onPressed: () {},
+                              onPressed: () {
+                                Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                builder: (context) => const Informasi()),
+                                );
+                              },
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
@@ -500,6 +552,95 @@ class HomePage extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class AutoScrollingBanner extends StatefulWidget {
+  final List<String> images;
+
+  const AutoScrollingBanner({Key? key, required this.images}) : super(key: key);
+
+  @override
+  _AutoScrollingBannerState createState() => _AutoScrollingBannerState();
+}
+
+class _AutoScrollingBannerState extends State<AutoScrollingBanner> {
+  late PageController _pageController;
+  int _currentPage = 0;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+    _startAutoScroll();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _startAutoScroll() {
+    _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (_currentPage < widget.images.length - 1) {
+        _currentPage++;
+      } else {
+        _currentPage = 0;
+      }
+      _pageController.animateToPage(
+        _currentPage,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      alignment: Alignment.bottomCenter,
+      children: [
+        PageView.builder(
+          controller: _pageController,
+          itemCount: widget.images.length,
+          onPageChanged: (index) {
+            setState(() {
+              _currentPage = index;
+            });
+          },
+          itemBuilder: (context, index) {
+            return Image.asset(
+              widget.images[index],
+              width: double.infinity,
+              fit: BoxFit.cover,
+            );
+          },
+        ),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(
+              widget.images.length,
+              (index) => Container(
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: _currentPage == index
+                      ? const Color.fromRGBO(45, 51, 87, 1)
+                      : Colors.grey,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

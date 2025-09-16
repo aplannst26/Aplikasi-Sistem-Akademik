@@ -21,9 +21,9 @@ FlutterLocalNotificationsPlugin? flutterLocalNotificationsPlugin;
 Future<void> setupFlutterNotifications() async {
   if (!kIsWeb) {
     channel = const AndroidNotificationChannel(
-      'high_importance_channel', // id
-      'High Importance Notifications', // title
-      description: 'This channel is used for important notifications.', // description
+      'high_importance_channel',
+      'High Importance Notifications',
+      description: 'This channel is used for important notifications.',
       importance: Importance.high,
     );
 
@@ -63,7 +63,10 @@ void showFlutterNotification(RemoteMessage message) {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await setupFlutterNotifications(); // Initialize notifications setup
+  await setupFlutterNotifications(); 
+  if (!kIsWeb) {
+    await setupFlutterNotifications();
+  }// Initialize notifications setup
   runApp(MyApp());
 }
 

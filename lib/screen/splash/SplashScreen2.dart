@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:academic_mobile/screen/welcomescreen/MainPage.dart';
 import 'package:academic_mobile/screen/welcomescreen/WelcomeScreen.dart';
 import 'package:academic_mobile/theme/color.dart';
 import 'package:flutter/material.dart';
@@ -11,7 +12,7 @@ class Spalsh2 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Future.delayed(Duration(seconds: 2), () {
-    Get.to(() => WelcomeScreen());
+    Get.to(() => Mainpage());
   });
     return Scaffold(
       backgroundColor: AppColor.primary,

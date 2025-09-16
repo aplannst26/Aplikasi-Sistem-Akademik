@@ -4,6 +4,8 @@ import 'package:academic_mobile/theme/color.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:academic_mobile/service/api_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -16,16 +18,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
 
   // Controllers untuk form fields
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _nimController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _fakultasController = TextEditingController();
+  final TextEditingController _prodiController = TextEditingController();
+  final TextEditingController _semesterController = TextEditingController();
+  final TextEditingController _tahunMasukController = TextEditingController();
 
-  // Firebase instances
+  // ApiService instance
+  final ApiService apiService = ApiService();
   bool _isLoading = false;
-  final _auth = FirebaseAuth.instance;
-  final _firestore = FirebaseFirestore.instance;
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -67,28 +74,65 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              // NIM field dengan validasi
+              // Email field
               TextFormField(
-                controller: _nimController,
-                keyboardType: TextInputType.number,
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
                   prefixIcon: const Icon(Icons.person),
-                  labelText: 'Nomor Induk Mahasiswa',
+                  labelText: 'Email Mahasiswa',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Mohon masukkan NIM';
+                    return 'Mohon masukkan Email';
                   }
                   if (value.length < 8) {
-                    return 'NIM tidak valid';
+                    return 'Email tidak valid';
                   }
                   return null;
                 },
               ),
               const SizedBox(height: 20),
+              // NIM field
+              TextFormField(
+                controller: _nimController,
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.email),
+                  labelText: 'Nim',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Mohon masukkan Nim';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 20),
+              // Nama field
+              TextFormField(
+                controller: _nameController,
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.person),
+                  labelText: 'Nama',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Mohon masukkan Nama';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 20),
+              // No Hp field
               TextFormField(
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
@@ -110,6 +154,79 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 },
               ),
               const SizedBox(height: 20),
+              // Program Studi field
+              TextFormField(
+                controller: _prodiController,
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.school),
+                  labelText: 'Program Studi',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Mohon masukkan Program Studi';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 20),
+              // Fakultas field
+              TextFormField(
+                controller: _fakultasController,
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.account_balance),
+                  labelText: 'Fakultas',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Mohon masukkan Fakultas';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 20),
+              // Semester field
+              TextFormField(
+                controller: _semesterController,
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.calendar_today),
+                  labelText: 'Semester',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Mohon masukkan Semester';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 20),
+              // Tahun Masuk field
+              TextFormField(
+                controller: _tahunMasukController,
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.date_range),
+                  labelText: 'Tahun Masuk',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Mohon masukkan Tahun Masuk';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 20),
+              // Password field
               TextFormField(
                 controller: _passwordController,
                 decoration: InputDecoration(
@@ -131,6 +248,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 },
               ),
               const SizedBox(height: 20),
+              // Konfirmasi Password field
               TextFormField(
                 controller: _confirmPasswordController,
                 decoration: InputDecoration(
@@ -152,6 +270,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 },
               ),
               const SizedBox(height: 5),
+              // Button Daftar
               SizedBox(
                 width: double.infinity,
                 height: 50,
@@ -166,13 +285,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: _isLoading
                       ? const CircularProgressIndicator(color: Colors.white)
                       : const Text(
-                    'Daftar',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
+                          'Daftar',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
                 ),
               ),
             ],
@@ -186,61 +305,62 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
-      _isLoading = true ;
+      _isLoading = true;
     });
 
     try {
-      final nimCheck = await _firestore
-          .collection('users')
-          .where('nim', isEqualTo: _nimController.text)
-          .get();
+      final result = await apiService.registerUser(
+  username: _nameController.text, // username diisi dari nama
+  email: _emailController.text,
+  nim: _nimController.text,
+  name: _nameController.text,
+  phone: _phoneController.text,
+  password: _passwordController.text,
+  fakultas: _fakultasController.text,
+  programStudi: _prodiController.text,
+  semester: _semesterController.text,
+  tahunMasuk: _tahunMasukController.text,
+);
 
-      if (nimCheck.docs.isNotEmpty) throw 'NIM sudah terdaftar';
-
-      final userCredential = await _auth.createUserWithEmailAndPassword(
-        email: "${_nimController.text}@student.ucn.ac.id",
-        password: _passwordController.text,
-      );
-
-      await _firestore.collection('users').doc(userCredential.user!.uid).set({
-        'nim': _nimController.text,
-        'phone': _phoneController.text,
-        'email': "${_nimController.text}@student.ucn.ac.id",
-        'created_at': FieldValue.serverTimestamp(),
-      });
-
-      Fluttertoast.showToast(
-        msg: 'Registrasi berhasil! Silakan login.',
-        backgroundColor: Colors.green,
-        textColor: Colors.white,
-        gravity: ToastGravity.CENTER,
-        toastLength: Toast.LENGTH_LONG,
-      );
-
-      if (mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => LoginScreen()),
-          (Route<dynamic> route) => false,
+      if (result['success'] == true || result['access_token'] != null) {
+        Fluttertoast.showToast(
+          msg: result['message'] ?? 'Registrasi berhasil! Silakan login.',
+          backgroundColor: Colors.green,
+          textColor: Colors.white,
+          gravity: ToastGravity.CENTER,
+          toastLength: Toast.LENGTH_LONG,
+        );
+        if (mounted) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => LoginScreen()),
+            (Route<dynamic> route) => false,
+          );
+        }
+      } else {
+        Fluttertoast.showToast(
+          msg: result['message'] ?? 'Registrasi gagal',
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
         );
       }
-    } on FirebaseAuthException catch (e) {
-      String message;
-      if (e.code == 'weak-password') {
-        message = 'Password terlalu lemah';
-      } else if (e.code == 'email-already-in-use') {
-        message = 'NIM sudah terdaftar';
-      } else {
-        message = 'Terjadi kesalahan: ${e.message}';
+    } catch (e) {
+      String errorMsg = 'Registrasi gagal. ';
+      try {
+        final errorStr = e.toString();
+        if (errorStr.contains('email has already been taken')) {
+          errorMsg = 'Email sudah terdaftar';
+        } else if (errorStr.contains('nim has already been taken')) {
+          errorMsg = 'NIM sudah terdaftar';
+        } else if (errorStr.contains('username has already been taken')) {
+          errorMsg = 'Username sudah terdaftar';
+        } else {
+          errorMsg = e.toString();
+        }
+      } catch (_) {
+        errorMsg = e.toString();
       }
       Fluttertoast.showToast(
-        msg: message,
-        backgroundColor: Colors.red,
-        textColor: Colors.white,
-      );
-    } catch (e) {
-      print("Error: $e");
-      Fluttertoast.showToast(
-        msg: e.toString(),
+        msg: errorMsg,
         backgroundColor: Colors.red,
         textColor: Colors.white,
       );
@@ -253,10 +373,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   void dispose() {
+    _emailController.dispose();
     _nimController.dispose();
+    _nameController.dispose();
     _phoneController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _fakultasController.dispose();
+    _prodiController.dispose();
+    _semesterController.dispose();
+    _tahunMasukController.dispose();
     super.dispose();
   }
 }

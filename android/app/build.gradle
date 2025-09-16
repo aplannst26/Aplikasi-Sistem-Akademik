@@ -17,19 +17,23 @@ def flutterVersionCode = localProperties.getProperty("flutter.versionCode") ?: "
 def flutterVersionName = localProperties.getProperty("flutter.versionName") ?: "1.0"
 
 android {
-    namespace = "com.example.academic_mobile"
-    compileSdk = flutter.compileSdkVersion
+    namespace "com.example.academic_mobile"
+    compileSdkVersion 35
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+        coreLibraryDesugaringEnabled = true
+    }
+    kotlinOptions {
+        jvmTarget = '17'
     }
 
     defaultConfig {
         applicationId "com.example.academic_mobile"
         minSdkVersion 23
-        targetSdk = flutter.targetSdkVersion
+        targetSdkVersion 35
         versionCode = flutterVersionCode.toInteger()
         versionName = flutterVersionName
         multiDexEnabled = true
@@ -43,10 +47,9 @@ android {
 }
 
 dependencies {
-    // Import Firebase BoM
-    implementation platform("com.google.firebase:firebase-bom:33.5.1")
-    implementation 'com.android.support:multidex:1.0.3'
-    implementation "com.google.firebase:firebase-analytics"
+    implementation platform('com.google.firebase:firebase-bom:33.14.0')
+    implementation 'com.google.firebase:firebase-analytics'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
 }
 
 flutter {

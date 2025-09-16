@@ -1,10 +1,15 @@
+import 'package:academic_mobile/ResetPassword/ResetPassword.dart';
 import 'package:academic_mobile/screen/homepage/HomeScreen.dart';
 import 'package:academic_mobile/screen/welcomescreen/RegisterScreen.dart';
-import '../../ResetPassword/LupaSandiScreen.dart';
 import 'package:academic_mobile/theme/color.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:academic_mobile/service/api_service.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -14,18 +19,55 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // Form key untuk validasi
   final _formKey = GlobalKey<FormState>();
-  
-  // Controller untuk text fields
-  final TextEditingController _nimController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  
-  // Firebase Auth instance
-  final _auth = FirebaseAuth.instance;
-  
-  // Loading state
-  bool _isLoading = false;
+  final ApiService apiService = ApiService();
+  String? googleName;
+
+  Future<void> _handleGoogleSignIn(BuildContext context) async {
+    try {
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) return; // User cancelled
+
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      await FirebaseAuth.instance.signInWithCredential(credential);
+
+      // Kirim ke backend untuk dapatkan access_token backend
+      final response = await http.post(
+        Uri.parse('${apiService.baseUrl}/login-google'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': googleUser.email,
+          'nama_lengkap': googleUser.displayName,
+        }),
+      );
+      final data = jsonDecode(response.body);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('access_token', data['access_token']);
+
+      setState(() {
+        googleName = googleUser.displayName;
+      });
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => HomeScreen(googleName: googleName),
+        ),
+      );
+    } catch (e) {
+      Fluttertoast.showToast(
+        msg: 'Login Google gagal: $e',
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,25 +113,25 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              // NIM field dengan validasi
+              // Username field (ganti dari email)
               TextFormField(
-                controller: _nimController,
+                controller: _emailController,
                 decoration: InputDecoration(
                   prefixIcon: const Icon(Icons.person),
-                  labelText: 'Nomor Induk Mahasiswa',
+                  labelText: 'Email',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30)
                   ),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Mohon masukkan NIM';
+                    return 'Mohon masukkan Username';
                   }
                   return null;
                 },
               ),
               const SizedBox(height: 20),
-              // Password field dengan validasi
+              // Password field with validation
               TextFormField(
                 controller: _passwordController,
                 decoration: InputDecoration(
@@ -114,7 +156,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: () {
                     Navigator.push(
                       context, 
-                      MaterialPageRoute(builder: (context) => const Lupasandiscreen()),
+                      MaterialPageRoute(builder: (context) => const ResetPassword()),
                     );
                   },
                   child: const Text(
@@ -130,31 +172,53 @@ class _LoginScreenState extends State<LoginScreen> {
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: _isLoading ? null : () => _handleLogin(context),
+                  onPressed: () => _handleLogin(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColor.primary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-                  child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text(
-                          'Login',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white
-                          ),
-                        ),
+                  child: const Text(
+                    'Login',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: OutlinedButton.icon(
+                  icon: Image.asset('assets/google.png', width: 24, height: 24),
+                  label: const Text('Login dengan Google', style: TextStyle(color: AppColor.primary)),
+                  onPressed: () => _handleGoogleSignIn(context),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: AppColor.primary),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
-              const Text(
-                'Belum Punya Akun?',
-                style: TextStyle(
-                  fontSize: 15,
-                  color: AppColor.primary
+              GestureDetector(
+                onTap:() {
+                  Navigator.push(
+                    context, 
+                    MaterialPageRoute(builder: (context) => RegisterScreen()),
+                  );
+                },
+                child:  Text(
+                  'Belum Punya Akun?',
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: AppColor.primary
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -191,53 +255,37 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _handleLogin(BuildContext context) async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
+    if (!_formKey.currentState!.validate()) return;
     try {
-      // Mencoba login dengan Firebase
-      final userCredential = await _auth.signInWithEmailAndPassword(
-        email: "${_nimController.text}@student.ucn.ac.id", // Menggunakan NIM sebagai email
+      final result = await apiService.loginUser(
+        email: _emailController.text,
         password: _passwordController.text,
       );
-
-      if (userCredential.user != null) {
-        // Login berhasil
-        Navigator.pushReplacement(
-          context,
+      if (result['access_token'] != null) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('access_token', result['access_token']);
+        Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => HomeScreen()),
         );
-      }
-    } on FirebaseAuthException catch (e) {
-      String message;
-      if (e.code == 'user-not-found') {
-        message = 'Akun tidak ditemukan. Silakan daftar terlebih dahulu.';
-      } else if (e.code == 'wrong-password') {
-        message = 'Password salah. Silakan coba lagi.';
       } else {
-        message = 'Akun Tidak Terdaftar Silahkan Daftar Terlebih Dahulu:';
+        Fluttertoast.showToast(
+          msg: result['message'] ?? 'Login gagal',
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+        );
       }
-      
+    } catch (e) {
       Fluttertoast.showToast(
-        msg: message,
+        msg: e.toString(),
         backgroundColor: Colors.red,
         textColor: Colors.white,
       );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
     }
   }
 
   @override
   void dispose() {
-    _nimController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }

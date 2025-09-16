@@ -34,23 +34,27 @@ dependencies:
   firebase_core: ^3.6.0
   cloud_firestore: ^5.4.4
   firebase_auth: ^5.3.1
-  fluttertoast: ^8.2.2
+  fluttertoast: ^8.2.9
   pdf: ^3.10.7
   printing: ^5.11.1
   flutter_local_notifications: ^18.0.0
   firebase_messaging: ^15.1.4
   flutter_launcher_icons: ^0.14.1
-
-
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
+  image_picker: ^1.1.2
+  rename: ^3.0.2
+  google_sign_in: ^6.2.2
+  http: ^1.2.1
+  file_picker: ^10.2.0
+  intl: ^0.20.2
   cupertino_icons: ^1.0.6
+
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   shared_preferences: ^2.3.2
   flutter_lints: ^3.0.0
+
 
 
 
@@ -97,6 +101,7 @@ flutter:
   - assets/group18.png
   - assets/ktm.png
   - assets/images.png
+  - assets/google.png
 
   #   - images/a_dot_ham.jpeg
 

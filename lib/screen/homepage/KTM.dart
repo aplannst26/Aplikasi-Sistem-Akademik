@@ -1,9 +1,12 @@
 import 'package:academic_mobile/screen/homepage/HomeScreen.dart';
 import 'package:academic_mobile/theme/color.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:academic_mobile/service/api_service.dart';
+import 'package:academic_mobile/model/mahasiswa_profile.dart';
 
 class KTMPage extends StatefulWidget {
   const KTMPage({Key? key}) : super(key: key);
@@ -14,15 +17,44 @@ class KTMPage extends StatefulWidget {
 
 class _KTMPageState extends State<KTMPage> {
   final TextEditingController _namaController = TextEditingController();
-  final TextEditingController _jenisKelaminController = TextEditingController();
-  final TextEditingController _ttlController = TextEditingController();
+  final TextEditingController _nimController = TextEditingController();
+  final TextEditingController _fakultasController = TextEditingController();
+  final TextEditingController _prodiController = TextEditingController();
+  final ApiService apiService = ApiService();
+  String? _semester;
+  String? _tahunMasuk;
+  String? _email;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchMahasiswaData();
+  }
 
   @override
   void dispose() {
     _namaController.dispose();
-    _jenisKelaminController.dispose();
-    _ttlController.dispose();
+    _nimController.dispose();
+    _fakultasController.dispose();
+    _prodiController.dispose();
     super.dispose();
+  }
+
+  Future<void> fetchMahasiswaData() async {
+    try {
+      MahasiswaProfile profile = await apiService.getMahasiswaProfile();
+      setState(() {
+        _namaController.text = profile.user.namaLengkap;
+        _nimController.text = profile.nim;
+        _fakultasController.text = profile.fakultas;
+        _prodiController.text = profile.programStudi;
+        _semester = profile.semester.toString();
+        _tahunMasuk = profile.tahunMasuk;
+        _email = profile.user.email;
+      });
+    } catch (e) {
+      // Tampilkan error jika perlu
+    }
   }
 
   Future<void> _createAndPrintPdf() async {
@@ -43,8 +75,9 @@ class _KTMPageState extends State<KTMPage> {
               ),
               pw.SizedBox(height: 20),
               pw.Text('Nama Lengkap: ${_namaController.text}'),
-              pw.Text('Jenis Kelamin: ${_jenisKelaminController.text}'),
-              pw.Text('Tempat/Tanggal Lahir: ${_ttlController.text}'),
+              pw.Text('Nim: ${_nimController.text}'),
+              pw.Text('Fakultas: ${_fakultasController.text}'),
+              pw.Text('Prodi: ${_prodiController.text}')
             ],
           );
         },
@@ -54,6 +87,27 @@ class _KTMPageState extends State<KTMPage> {
     await Printing.layoutPdf(
       onLayout: (PdfPageFormat format) async => pdf.save(),
     );
+  }
+
+  Future<void> _saveProfile() async {
+    try {
+      await apiService.updateMahasiswaProfile(
+        namaLengkap: _namaController.text,
+        email: _email ?? '', // Ambil dari profile
+        nim: _nimController.text,
+        fakultas: _fakultasController.text,
+        prodi: _prodiController.text,
+        semester: _semester ?? '',
+        tahunMasuk: _tahunMasuk ?? '',
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Data berhasil disimpan!')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal menyimpan data!')),
+      );
+    }
   }
 
   Widget _buildTextField({
@@ -97,12 +151,14 @@ class _KTMPageState extends State<KTMPage> {
                     onPressed: () {
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (context) => const HomeScreen()),
+                        MaterialPageRoute(
+                            builder: (context) => const HomeScreen()),
                       );
                     },
                   ),
                   const Text(
                     'KTM',
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
@@ -112,7 +168,7 @@ class _KTMPageState extends State<KTMPage> {
                 ],
               ),
             ),
-            
+
             // Content Area
             Expanded(
               child: Container(
@@ -133,7 +189,7 @@ class _KTMPageState extends State<KTMPage> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // KTM Image
                     ClipRRect(
                       borderRadius: BorderRadius.circular(20),
@@ -145,21 +201,85 @@ class _KTMPageState extends State<KTMPage> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    
-                    // Form Fields
-                    _buildTextField(
-                      label: 'Nama Lengkap',
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: const Text(
+                        'Nama Lengkap',
+                        style:
+                            TextStyle(color: Color.fromARGB(255, 45, 51, 87)),
+                      ),
+                    ),
+                    const SizedBox(height: 0),
+                    TextFormField(
                       controller: _namaController,
+                      keyboardType: TextInputType.name,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
                     ),
-                    _buildTextField(
-                      label: 'Jenis Kelamin',
-                      controller: _jenisKelaminController,
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: const Text(
+                        'Nim',
+                        style:
+                            TextStyle(color: Color.fromARGB(255, 45, 51, 87)),
+                      ),
                     ),
-                    _buildTextField(
-                      label: 'Tempat/Tanggal lahir',
-                      controller: _ttlController,
+                    const SizedBox(height: 5),
+                    TextFormField(
+                      controller: _nimController,
+                      keyboardType: TextInputType.name,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
                     ),
-                    
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: const Text(
+                        'Fakultas',
+                        style:
+                            TextStyle(color: Color.fromARGB(255, 45, 51, 87)),
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    TextFormField(
+                      controller: _fakultasController,
+                      keyboardType: TextInputType.name,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: const Text(
+                        'Prodi',
+                        style:
+                            TextStyle(color: Color.fromARGB(255, 45, 51, 87)),
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    TextFormField(
+                      controller: _prodiController,
+                      keyboardType: TextInputType.name,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 5),
                     // Print Button
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -169,9 +289,10 @@ class _KTMPageState extends State<KTMPage> {
                           onPressed: _createAndPrintPdf,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColor.primary,
-                            padding: const EdgeInsets.symmetric(vertical: 15),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 50, vertical: 15),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(30),
                             ),
                           ),
                           child: const Text(
@@ -181,6 +302,23 @@ class _KTMPageState extends State<KTMPage> {
                               color: Colors.white,
                             ),
                           ),
+                        ),
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: _saveProfile,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColor.primary,
+                        padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      child: const Text(
+                        'Simpan',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.white,
                         ),
                       ),
                     ),
@@ -202,7 +340,7 @@ class IconCard extends StatelessWidget {
   const IconCard({Key? key, required this.icon, required this.label})
       : super(key: key);
 
-@override
+  @override
   Widget build(BuildContext context) {
     return Column(
       children: [

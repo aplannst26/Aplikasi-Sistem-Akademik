@@ -1,14 +1,30 @@
 import 'package:academic_mobile/screen/homepage/HomeScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:academic_mobile/theme/color.dart';
+import 'package:academic_mobile/model/jadwal_kuliah.dart';
+import 'package:academic_mobile/service/api_service.dart';
 
-class JadwalKuliahPage extends StatelessWidget {
+class JadwalKuliahPage extends StatefulWidget {
   const JadwalKuliahPage({Key? key}) : super(key: key);
+
+  @override
+  State<JadwalKuliahPage> createState() => _JadwalKuliahPageState();
+}
+
+class _JadwalKuliahPageState extends State<JadwalKuliahPage> {
+  late Future<List<JadwalKuliah>> _futureJadwal;
+  final ApiService apiService = ApiService();
+
+  @override
+  void initState() {
+    super.initState();
+    _futureJadwal = apiService.getJadwalKuliah();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color.fromARGB(255, 45, 51, 87),
+      backgroundColor: const Color.fromARGB(255, 45, 51, 87),
       body: SafeArea(
         child: Column(
           children: [
@@ -28,7 +44,8 @@ class JadwalKuliahPage extends StatelessWidget {
                     },
                   ),
                   const Text(
-                    'KRS',
+                    'Jadwal Kuliah',
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
@@ -45,107 +62,32 @@ class JadwalKuliahPage extends StatelessWidget {
                   color: Colors.white,
                   borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
                 ),
-                child: ListView(
-                  padding: const EdgeInsets.all(16.0),
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            CircleDateWidget(date: '27'),
-                            const SizedBox(width: 8),
-                            const Text(
-                              'Rabu',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: AppColor.primary,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        JadwalCard(
-                          time: '09:40 - 12:10',
-                          course: 'Rekayasa Web Praktik',
-                          room: 'E.3.3',
-                        ),
-                        const SizedBox(height: 20),
-                        const Divider(),
-                        const SizedBox(height: 20),
-                        const Text(
-                          'Jadwal kuliah saya',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: AppColor.primary,
-                          ),
-                        ),
-                        const Divider(),
-                        Row(
-                          children: [
-                            const Text(
-                              'Senin',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                                color: AppColor.primary,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        JadwalCard(
-                          time: '07:00 - 09:10',
-                          course: 'Testing & Implementasi',
-                          room: 'H.2.3',
-                        ),
-                        Row(
-                          children: [
-                            const Text(
-                              'Selasa',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                                color: AppColor.primary,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        JadwalCard(
-                          time: '09:40 - 12:10',
-                          course: 'Sistem Operasi',
-                          room: 'G.2.2',
-                        ),
-                        const SizedBox(height: 10),
-                        JadwalCard(
-                          time: '14:20 - 15:00',
-                          course: 'Mobile Computing',
-                          room: 'G.3.2',
-                        ),
-                        Row(
-                          children: [
-                            const Text(
-                              'Rabu',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                                color: AppColor.primary,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        JadwalCard(
-                          time: '09:40 - 12:10',
-                          course: 'Rekayasa Web Praktik',
-                          room: 'E.3.3',
-                          ),
-                      ],
-                    ),
-                  ],
+                child: FutureBuilder<List<JadwalKuliah>>(
+                  future: _futureJadwal,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      return Center(child: Text('Gagal memuat jadwal kuliah'));
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return const Center(child: Text('Tidak ada jadwal kuliah'));
+                    }
+                    final jadwalList = snapshot.data!;
+                    return ListView.separated(
+                      padding: const EdgeInsets.all(16.0),
+                      itemCount: jadwalList.length,
+                      separatorBuilder: (context, index) => const SizedBox(height: 16),
+                      itemBuilder: (context, index) {
+                        final jadwal = jadwalList[index];
+                        return JadwalCard(
+                          time: '${jadwal.jamMulai} - ${jadwal.jamSelesai}',
+                          course: 'Mata Kuliah ID: ${jadwal.mataKuliahId}', // Ganti dengan nama MK jika ada relasi
+                          room: jadwal.ruang,
+                          hari: jadwal.hari,
+                        );
+                      },
+                    );
+                  },
                 ),
               ),
             ),
@@ -189,12 +131,14 @@ class JadwalCard extends StatelessWidget {
   final String time;
   final String course;
   final String room;
+  final String hari;
 
   const JadwalCard({
     Key? key,
     required this.time,
     required this.course,
     required this.room,
+    required this.hari,
   }) : super(key: key);
 
   @override
@@ -207,11 +151,15 @@ class JadwalCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(Icons.arrow_downward, color: AppColor.primary),
+          Icon(Icons.calendar_today, color: AppColor.primary),
           const SizedBox(width: 10),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Text(
+                hari,
+                style: const TextStyle(fontWeight: FontWeight.bold, color: AppColor.primary),
+              ),
               Text(
                 time,
                 style: const TextStyle(fontWeight: FontWeight.bold),

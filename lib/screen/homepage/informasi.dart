@@ -27,7 +27,7 @@ class Informasi extends StatelessWidget {
                     },
                   ),
                   const Text(
-                    'Detail KHS', // Changed from KTM to KRS
+                    'Informasi', // Changed from KTM to KRS
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
@@ -178,7 +178,11 @@ class Informasi extends StatelessWidget {
                                       ),
                                     ),
                                     onPressed: () {
-                                      // Menambahkan fungsi untuk tombol 'Selanjutnya'
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => Mahasiswa()),
+                                      );
                                     },
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
@@ -250,7 +254,11 @@ class Informasi extends StatelessWidget {
                                       ),
                                     ),
                                     onPressed: () {
-                                      // Menambahkan fungsi untuk tombol 'Selanjutnya'
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => Mahasiswa()),
+                                      );
                                     },
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
